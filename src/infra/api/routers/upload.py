@@ -53,16 +53,14 @@ def confirm_upload(
     sqs = Depends(get_sqs_client)
 ):
     # 1. Busca a tarefa no banco
-    # Nota: Precisamos implementar um find_by_id no DynamoRepo ou usar get_item direto aqui
-    # Assumindo que você adicione o método find_by_id no repo:
     try:
-        response = repo.table.get_item(Key={'PK': f"VIDEO#{request.task_id}", 'SK': "METADATA"})
+        response = repo.table.get_item(Key={'PK': request.task_id, 'SK': "METADATA"})
         item = response.get('Item')
         if not item:
             raise HTTPException(status_code=404, detail="Task não encontrada")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
+    
     # 2. Valida se o arquivo existe no S3
     if not s3.file_exists(item['s3_path']):
         repo.update_status(request.task_id, "UPLOAD_FAILED")

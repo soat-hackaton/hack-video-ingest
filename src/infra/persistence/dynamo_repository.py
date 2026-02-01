@@ -10,7 +10,7 @@ class DynamoDBVideoRepo(VideoRepositoryInterface):
 
     def save(self, task: VideoTask):
         item = {
-            'PK': f"VIDEO#{task.id}",
+            'PK': task.id,
             'SK': "METADATA",
             'id': task.id,
             'filename': task.filename,
@@ -22,7 +22,7 @@ class DynamoDBVideoRepo(VideoRepositoryInterface):
 
     def update_status(self, task_id: str, new_status: str):
         self.table.update_item(
-            Key={'PK': f"VIDEO#{task_id}", 'SK': "METADATA"},
+            Key={'PK': task_id, 'SK': "METADATA"},
             UpdateExpression="set #st = :s",
             ExpressionAttributeNames={'#st': 'status'},
             ExpressionAttributeValues={':s': new_status}
