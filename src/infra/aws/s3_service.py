@@ -1,4 +1,5 @@
 import boto3
+from botocore.exceptions import ClientError
 from src.core.interfaces.storage import StorageInterface
 
 class S3Service(StorageInterface):
@@ -14,5 +15,8 @@ class S3Service(StorageInterface):
         )
 
     def file_exists(self, key: str) -> bool:
-        # Implementação do head_object...
-        pass
+        try:
+            self.client.head_object(Bucket=self.bucket, Key=key)
+            return True
+        except ClientError:
+            return False
