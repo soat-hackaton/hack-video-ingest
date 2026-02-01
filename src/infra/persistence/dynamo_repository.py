@@ -4,14 +4,14 @@ from src.infra.aws.session import get_boto_session
 
 class DynamoDBVideoRepo(VideoRepositoryInterface):
     def __init__(self, table_name: str):
-        self.dynamodb = get_boto_session.resource('dynamodb')
+        session = get_boto_session()
+        self.dynamodb = session.resource('dynamodb')
         self.table = self.dynamodb.Table(table_name)
 
     def save(self, task: VideoTask):
-        # Dynamo aceita dicionário direto
         item = {
-            'PK': f"VIDEO#{task.id}",  # Primary Key
-            'SK': "METADATA",          # Sort Key (útil para Single Table Design)
+            'PK': f"VIDEO#{task.id}",
+            'SK': "METADATA",
             'id': task.id,
             'filename': task.filename,
             's3_path': task.s3_path,
