@@ -7,10 +7,6 @@ from src.infra.api.dependencies import get_request_upload_use_case, get_confirm_
 
 router = APIRouter()
 
-@app.get("/health")
-def health_check():
-    return {"status": "ok"}
-
 @router.post(
     "/request-upload", 
     response_model=UploadVideoResponse,
@@ -20,6 +16,11 @@ def request_upload(
     data: UploadVideoRequest, 
     use_case: RequestUploadUseCase = Depends(get_request_upload_use_case)
 ):
+    """
+    Cria uma URL pré-assinada do S3 
+    então é feito o upload do video pelo front
+    e atualiza o status do pipeline
+    """
     return use_case.execute(data.filename, data.content_type)
 
 @router.post(
@@ -31,4 +32,9 @@ def confirm_upload(
     request: ConfirmVideoUploadRequest,
     use_case: ConfirmUploadUseCase = Depends(get_confirm_use_case)
 ):
+    """
+    Valida a criação do video dentro do S3
+    então dispara uma mensagem para o SQS
+    e atualiza o status do pipeline
+    """
     return use_case.execute(request.task_id)
