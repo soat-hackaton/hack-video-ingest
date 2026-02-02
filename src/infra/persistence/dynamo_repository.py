@@ -1,8 +1,8 @@
-from src.core.interfaces.repositories import VideoRepositoryInterface
+from src.core.interfaces import RepositoryInterface
 from src.core.entities.video_task import VideoTask
 from src.infra.aws.session import get_boto_session
 
-class DynamoDBVideoRepo(VideoRepositoryInterface):
+class DynamoDBVideoRepo(RepositoryInterface):
     def __init__(self, table_name: str):
         session = get_boto_session()
         self.dynamodb = session.resource('dynamodb')
@@ -27,3 +27,7 @@ class DynamoDBVideoRepo(VideoRepositoryInterface):
             ExpressionAttributeNames={'#st': 'status'},
             ExpressionAttributeValues={':s': new_status}
         )
+    
+    def find_by_id(self, task_id: str) -> dict:
+        response = self.table.get_item(Key={'PK': task_id, 'SK': "METADATA"})
+        return response.get('Item')

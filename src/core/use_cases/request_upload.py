@@ -1,10 +1,9 @@
-from src.core.interfaces.storage import StorageInterface
-from src.core.interfaces.repositories import VideoRepositoryInterface
+from src.core.interfaces import StorageInterface, RepositoryInterface
 from src.core.entities.video_task import VideoTask
 import uuid
 
 class RequestUploadUseCase:
-    def __init__(self, storage: StorageInterface, repo: VideoRepositoryInterface):
+    def __init__(self, storage: StorageInterface, repo: RepositoryInterface):
         self.storage = storage
         self.repo = repo
 

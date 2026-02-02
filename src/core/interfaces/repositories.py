@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from src.core.entities.video_task import VideoTask
 
-class VideoRepositoryInterface(ABC):
+class RepositoryInterface(ABC):
     @abstractmethod
     def save(self, task: VideoTask):
         pass

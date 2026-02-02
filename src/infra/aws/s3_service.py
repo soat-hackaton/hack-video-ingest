@@ -1,6 +1,6 @@
 import boto3
 from botocore.exceptions import ClientError
-from src.core.interfaces.storage import StorageInterface
+from src.core.interfaces import StorageInterface
 
 class S3Service(StorageInterface):
     def __init__(self, bucket_name: str):
