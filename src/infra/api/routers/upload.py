@@ -6,7 +6,7 @@ from src.core.use_cases import RequestUploadUseCase, ConfirmUploadUseCase
 from src.infra.aws import S3Service, SQSService
 from src.infra.persistence.dynamo_repository import DynamoDBVideoRepo
 from src.infra.api.schemas.upload import UploadVideoRequest, UploadVideoResponse
-from src.infra.api.schemas.lifecycle import ConfirmVideoUploadRequest, ConfirmVideoUploadResponsefaz
+from src.infra.api.schemas.lifecycle import ConfirmVideoUploadRequest, ConfirmVideoUploadResponse
 from src.infra.api.dependencies import get_request_upload_use_case, get_confirm_use_case
 from pydantic import BaseModel
 
