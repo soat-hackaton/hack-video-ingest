@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: video-ingest-app
+  namespace: video-ingest-ns
+  labels:
+    app: video-ingest
+spec:
+  replicas: 1 # Default, será sobrescrito pelo HPA ou Overlay
+  selector:
+    matchLabels:
+      app: video-ingest
+  template:
+    metadata:
+      labels:
+        app: video-ingest
+    spec:
+      containers:
+        - name: video-ingest
+          # A imagem será definida pelo kustomize edit set image no CI/CD
+          image: video-ingest-image:latest 
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000 # Porta definida no seu Dockerfile
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          envFrom:
+            - configMapRef:
+                name: video-ingest-config
+          env:
+            # Mapeamento das Secrets para as variáveis que o Boto3 espera
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: aws_access_key_id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: aws_secret_access_key
+            - name: AWS_SESSION_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: aws_session_token
