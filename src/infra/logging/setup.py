@@ -1,6 +1,7 @@
 import logging
 import watchtower
-import json
+import boto3
+import os
 from datetime import datetime
 from pythonjsonlogger import jsonlogger
 from src.infra.logging.context import get_correlation_id
@@ -15,6 +16,9 @@ def setup_logging(app_name="video-ingest", region="us-west-2"):
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
 
+    if logger.handlers:
+        logger.handlers = []
+
     # 1. Filtro de Contexto (Injeta o task_id)
     correlation_filter = CorrelationIdFilter()
 
@@ -25,17 +29,21 @@ def setup_logging(app_name="video-ingest", region="us-west-2"):
 
     # 3. Handler do CloudWatch
     try:
+        region = os.getenv("AWS_REGION", "us-west-2")
+        boto3.setup_default_session(region_name=region)
+
         cw_handler = watchtower.CloudWatchLogHandler(
             log_group=app_name,
             stream_name=f"app-{datetime.now().strftime('%Y-%m-%d')}",
-            boto3_session=None, # Usa as credenciais padrão do ambiente (boto3)
             create_log_group=True
         )
+        
         cw_handler.setFormatter(formatter)
         cw_handler.addFilter(correlation_filter)
         logger.addHandler(cw_handler)
+        print(f"✅ CloudWatch Logger configurado na região {region}")
     except Exception as e:
-        print(f"Aviso: Não foi possível conectar ao CloudWatch: {e}")
+        print(f"⚠️ AVISO: Falha ao configurar CloudWatch: {e}")
 
     # 4. Handler de Console (Para ver logs locais)
     console_handler = logging.StreamHandler()
