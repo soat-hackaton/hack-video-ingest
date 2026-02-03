@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: video-ingest-app
-  namespace: video-ingest-ns
   labels:
     app: video-ingest
 spec:
