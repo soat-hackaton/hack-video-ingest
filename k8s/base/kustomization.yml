@@ -4,8 +4,6 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - configmap.yaml
-  # Não incluímos secrets.yaml na base pois ele é criado via comando no CI/CD
-  # Se fosse um secret fixo (não Academy), ele estaria aqui.
   - deployment.yaml
   - service.yaml
   - hpa.yaml

@@ -9,8 +9,5 @@ bases:
 patchesStrategicMerge:
   - patch-replicas.yaml
 
-# Define prefixo para recursos se desejar (opcional)
-# namePrefix: dev-
-
 commonLabels:
   environment: dev

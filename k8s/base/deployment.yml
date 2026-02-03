@@ -6,7 +6,7 @@ metadata:
   labels:
     app: video-ingest
 spec:
-  replicas: 1 # Default, será sobrescrito pelo HPA ou Overlay
+  replicas: 1
   selector:
     matchLabels:
       app: video-ingest
@@ -21,7 +21,7 @@ spec:
           image: video-ingest-image:latest 
           imagePullPolicy: Always
           ports:
-            - containerPort: 8000 # Porta definida no seu Dockerfile
+            - containerPort: 8000
           resources:
             requests:
               cpu: "250m"
@@ -33,7 +33,6 @@ spec:
             - configMapRef:
                 name: video-ingest-config
           env:
-            # Mapeamento das Secrets para as variáveis que o Boto3 espera
             - name: AWS_ACCESS_KEY_ID
               valueFrom:
                 secretKeyRef:
