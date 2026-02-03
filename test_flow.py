@@ -3,7 +3,8 @@ import requests
 import sys
 
 # Configuração
-API_URL = "http://localhost:8000/api/v1"
+# API_URL = "http://localhost:8000/api/v1"
+API_URL = "http://ae3cbfc00a4694350bad03a85797ef48-1155896299.us-west-2.elb.amazonaws.com/api/v1"
 FILE_NAME = "video_teste.mp4"
 CONTENT_TYPE = "video/mp4"
 
@@ -39,7 +40,6 @@ def run_test():
     print(f"\n--- 2. Fazendo Upload direto para o S3 ---")
     try:
         with open(FILE_NAME, 'rb') as f:
-            # Importante: Content-Type deve bater com o que foi assinado
             s3_response = requests.put(upload_url, data=f, headers={"Content-Type": CONTENT_TYPE})
             s3_response.raise_for_status()
         print("✔ Upload para o S3 concluído com sucesso!")
