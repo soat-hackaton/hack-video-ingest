@@ -4,3 +4,4 @@ boto3==1.34.0
 pydantic==2.5.3
 python-dotenv==1.0.0
 watchtower==3.0.1
+python-json-logger==2.0.7
