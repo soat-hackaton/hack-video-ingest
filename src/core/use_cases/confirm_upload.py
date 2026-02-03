@@ -1,6 +1,10 @@
+import logging
 import os
 from src.core.interfaces import MessageBrokerInterface, RepositoryInterface, StorageInterface
 from src.core.exceptions import ResourceNotFoundException, BusinessRuleException
+from src.infra.logging.context import set_correlation_id
+
+logger = logging.getLogger(__name__)
 
 class ConfirmUploadUseCase:
     def __init__(
@@ -16,12 +20,18 @@ class ConfirmUploadUseCase:
         self.queue_url = queue_url
 
     def execute(self, task_id: str):
+        set_correlation_id(task_id)
+
+        logger.info("Iniciando confirmação de upload", extra={"step": "confirm_start"})
+
         item = self.repo.find_by_id(task_id)
         if not item:
+            logger.warning("Tentativa de confirmação para Task inexistente")
             raise ResourceNotFoundException("Task não encontrada")
 
         if not self.storage.file_exists(item['s3_path']):
             self.repo.update_status(task_id, "UPLOAD_FAILED")
+            logger.error("Arquivo não encontrado no S3 após confirmação do cliente")
             raise BusinessRuleException("Arquivo não encontrado no Storage")
 
         try:
@@ -30,12 +40,16 @@ class ConfirmUploadUseCase:
                 "s3_path": item['s3_path'],
                 "filename": item['filename']
             }
+
+            logger.info("Enviando mensagem para SQS", extra={"queue_url": self.queue_url})
             self.broker.send_message(self.queue_url, message)
             
             self.repo.update_status(task_id, "QUEUED")
             
+            logger.info("Processo de ingestão finalizado com sucesso", extra={"step": "ingest_complete"})
             return {"status": "success", "message": "Vídeo enfileirado para processamento"}
             
         except Exception as e:
             self.repo.update_status(task_id, "SQS_ERROR")
+            logger.error("Erro crítico ao processar confirmação", exc_info=True)
             raise e

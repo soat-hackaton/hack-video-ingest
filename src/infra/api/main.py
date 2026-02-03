@@ -7,8 +7,11 @@ from src.infra.api.exception_handlers import (
     business_rule_handler, 
     general_exception_handler
 )
+from src.infra.logging.setup import setup_logging
 
 load_dotenv()
+
+setup_logging()
 
 app = FastAPI(title="Video Ingest API")
 
