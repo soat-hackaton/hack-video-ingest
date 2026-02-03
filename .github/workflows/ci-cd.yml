@@ -115,7 +115,7 @@ jobs:
         run: |
           # A. Cria/Atualiza o Secret das Credenciais AWS Imperativamente
           # (Isso garante que as credenciais rotativas do Academy estejam sempre frescas no cluster)
-          kubectl create secret generic aws-credentials \
+          kubectl create secret generic aws-credentials -n video-ingest-ns \
             --from-literal=aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }} \
             --from-literal=aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
             --from-literal=aws_session_token=${{ secrets.AWS_SESSION_TOKEN }} \
