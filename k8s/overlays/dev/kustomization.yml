@@ -3,11 +3,12 @@ kind: Kustomization
 
 namespace: video-ingest-ns
 
-bases:
+resources:
   - ../../base
 
-patchesStrategicMerge:
-  - patch-replicas.yaml
+patches:
+  - path: patch-replicas.yml
 
-commonLabels:
-  environment: dev
+labels:
+  - pairs:
+      environment: dev

@@ -121,6 +121,8 @@ jobs:
             --from-literal=aws_session_token=${{ secrets.AWS_SESSION_TOKEN }} \
             --dry-run=client -o yaml | kubectl apply -f -
 
+          kubectl apply -f k8s/base/namespace.yml
+          
           # B. Entra na pasta do Overlay de Dev
           cd k8s/overlays/dev
 
