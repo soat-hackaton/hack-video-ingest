@@ -16,7 +16,7 @@ class RequestUploadUseCase:
         set_correlation_id(task_id)
 
         logger.info("Iniciando processo de solicitação de upload", extra={
-            "filename": filename,
+            "video_filename": filename,
             "step": "request_upload_start"
         })
 
