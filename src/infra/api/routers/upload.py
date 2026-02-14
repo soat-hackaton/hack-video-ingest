@@ -4,8 +4,10 @@ from src.infra.api.schemas.upload import UploadVideoRequest, UploadVideoResponse
 from src.infra.api.schemas.lifecycle import ConfirmVideoUploadRequest, ConfirmVideoUploadResponse
 from src.infra.api.schemas.errors import COMMON_ERROR_RESPONSES
 from src.infra.api.dependencies import get_request_upload_use_case, get_confirm_use_case
+from src.infra.api.security import verify_token
 
-router = APIRouter()
+# dependencies: protege as rotas abaixo (request-upload e confirm-upload)
+router = APIRouter(dependencies=[Depends(verify_token)])
 
 @router.post(
     "/request-upload", 
