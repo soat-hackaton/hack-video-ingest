@@ -4,7 +4,11 @@ from fastapi import Depends
 from src.infra.aws.s3_service import S3Service
 from src.infra.persistence.dynamo_repository import DynamoDBVideoRepo
 from src.infra.aws.sqs_service import SQSService
-from src.core.use_cases import RequestUploadUseCase, ConfirmUploadUseCase
+from src.core.use_cases import (
+    RequestUploadUseCase, 
+    ConfirmUploadUseCase,
+    ListVideosUseCase
+)
 
 # --- Factories de Serviços Básicos ---
 def get_s3_service():
@@ -37,3 +41,11 @@ def get_confirm_use_case(
         broker=sqs,
         queue_url=os.getenv("SQS_QUEUE_URL")
     )
+
+def get_list_videos_use_case(
+    repo: DynamoDBVideoRepo = Depends(get_repo)
+):
+    """
+    Injeta o Repositório do DynamoDB dentro do Caso de Uso de Listagem
+    """
+    return ListVideosUseCase(repo=repo)
