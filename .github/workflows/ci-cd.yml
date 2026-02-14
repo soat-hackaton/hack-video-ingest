@@ -113,31 +113,30 @@ jobs:
           SQS_QUEUE_URL: ${{ secrets.SQS_QUEUE_URL }}
         
         run: |
-          # A. Cria/Atualiza o Secret das Credenciais AWS Imperativamente
-          # (Isso garante que as credenciais rotativas do Academy estejam sempre frescas no cluster)
+          # Criação do namespace  
+          kubectl apply -f k8s/base/namespace.yml
+
+          # Cria/Atualiza o Secret das Credenciais AWS Imperativamente
           kubectl create secret generic aws-credentials -n video-ingest-ns \
             --from-literal=aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }} \
             --from-literal=aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
             --from-literal=aws_session_token=${{ secrets.AWS_SESSION_TOKEN }} \
             --dry-run=client -o yaml | kubectl apply -f -
-
-          kubectl apply -f k8s/base/namespace.yml
           
-          # B. Entra na pasta do Overlay de Dev
+          # Entra na pasta do Overlay de Dev
           cd k8s/overlays/dev
 
-          # C. Atualiza a imagem no Kustomize com a tag específica do Build
+          # Atualiza a imagem no Kustomize com a tag específica do Build
           kustomize edit set image video-ingest-image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-          # D. Gera o manifesto final (Build)
+          # Gera o manifesto final (Build)
           kustomize build . > final_manifest.yaml
 
-          # E. Substitui as variáveis de ambiente (${S3_BUCKET_NAME}, etc) no arquivo gerado
-          # Note: Usamos envsubst apenas nas variáveis que definimos acima, para não quebrar outras coisas
+          # Substitui as variáveis de ambiente (${S3_BUCKET_NAME}, etc) no arquivo gerado
           envsubst '${S3_BUCKET_NAME} ${DYNAMO_TABLE_NAME} ${SQS_QUEUE_URL}' < final_manifest.yaml > deploy.yaml
 
-          # F. Aplica no Cluster
+          # Aplica no Cluster
           kubectl apply -f deploy.yaml
 
-          # G. Aguarda o rollout (sucesso ou falha)
+          # Aguarda o rollout (sucesso ou falha)
           kubectl rollout status deployment/video-ingest-app -n video-ingest-ns --timeout=120s
