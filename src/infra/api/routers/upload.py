@@ -1,12 +1,16 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from src.core.use_cases import RequestUploadUseCase, ConfirmUploadUseCase
 from src.infra.api.schemas.upload import UploadVideoRequest, UploadVideoResponse
 from src.infra.api.schemas.lifecycle import ConfirmVideoUploadRequest, ConfirmVideoUploadResponse
 from src.infra.api.schemas.errors import COMMON_ERROR_RESPONSES
-from src.infra.api.dependencies import get_request_upload_use_case, get_confirm_use_case
+from src.infra.api.dependencies import (
+    get_request_upload_use_case, 
+    get_confirm_use_case,
+    get_list_videos_use_case
+)
 from src.infra.api.security import verify_token
 
-# dependencies: protege as rotas abaixo (request-upload e confirm-upload)
+# Protege TODAS as rotas deste arquivo com JWT
 router = APIRouter(dependencies=[Depends(verify_token)])
 
 @router.post(
@@ -46,7 +50,10 @@ def confirm_upload(
 
     return use_case.execute(request.task_id)
 
-@router.get("/list", ...)
+@router.get(
+    "/list", 
+    status_code=200
+)
 def list_videos(
     use_case: ListVideosUseCase = Depends(get_list_videos_use_case),
     token_payload: dict = Depends(verify_token)

@@ -20,4 +20,4 @@ app.add_exception_handler(BusinessRuleException, business_rule_handler)
 app.add_exception_handler(Exception, general_exception_handler)
 
 app.include_router(health.router)
-app.include_router(upload.router, prefix="/api/v1")
+app.include_router(upload.router, prefix="/api/video")
