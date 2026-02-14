@@ -20,7 +20,7 @@ class RequestUploadUseCase:
             "step": "request_upload_start"
         })
 
-        s3_key = f"hack-uploaded-videos/uploads/{task_id}"
+        s3_key = f"uploads/{task_id}"
         
         try:
             # Gera URL assinada
