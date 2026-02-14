@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
-from src.core.use_cases import RequestUploadUseCase, ConfirmUploadUseCase
+from src.core.use_cases import RequestUploadUseCase, ConfirmUploadUseCase, ListVideosUseCase
 from src.infra.api.schemas.upload import UploadVideoRequest, UploadVideoResponse
 from src.infra.api.schemas.lifecycle import ConfirmVideoUploadRequest, ConfirmVideoUploadResponse
+from src.infra.api.schemas.video import VideoListResponse
 from src.infra.api.schemas.errors import COMMON_ERROR_RESPONSES
 from src.infra.api.dependencies import (
     get_request_upload_use_case, 
@@ -52,7 +53,7 @@ def confirm_upload(
 
 @router.get(
     "/list", 
-    response_model=List[VideoItemResponse],
+    response_model=VideoListResponse,
     status_code=200
 )
 def list_videos(
