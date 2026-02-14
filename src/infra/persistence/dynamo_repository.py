@@ -1,3 +1,4 @@
+from boto3.dynamodb.conditions import Key
 from src.core.interfaces import RepositoryInterface
 from src.core.entities.video_task import VideoTask
 from src.infra.aws.session import get_boto_session
@@ -16,6 +17,7 @@ class DynamoDBVideoRepo(RepositoryInterface):
             'filename': task.filename,
             's3_path': task.s3_path,
             'status': task.status,
+            'user_email': task.user_email,
             'created_at': task.created_at.isoformat()
         }
         self.table.put_item(Item=item)
@@ -31,3 +33,14 @@ class DynamoDBVideoRepo(RepositoryInterface):
     def find_by_id(self, task_id: str) -> dict:
         response = self.table.get_item(Key={'PK': task_id, 'SK': "METADATA"})
         return response.get('Item')
+
+    def list_by_user(self, user_email: str):
+        response = self.table.query(
+            IndexName='UserEmailIndex',
+            KeyConditionExpression=Key('user_email').eq(user_email)
+        )
+        
+        # Retornar ordenado pela data de criação
+        items = response.get('Items', [])
+        items.sort(key=lambda x: x['created_at'], reverse=True) 
+        return items

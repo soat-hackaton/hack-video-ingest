@@ -16,14 +16,18 @@ router = APIRouter(dependencies=[Depends(verify_token)])
 )
 def request_upload(
     data: UploadVideoRequest, 
-    use_case: RequestUploadUseCase = Depends(get_request_upload_use_case)
+    use_case: RequestUploadUseCase = Depends(get_request_upload_use_case),
+    token_payload: dict = Depends(verify_token)
 ):
     """
     Cria uma URL pré-assinada do S3 
     então é feito o upload do video pelo front
     e atualiza o status do pipeline
     """
-    return use_case.execute(data.filename, data.content_type)
+
+    user_email = token_payload.get("sub")
+
+    return use_case.execute(data.filename, data.content_type, user_email)
 
 @router.post(
     "/confirm-upload", 
@@ -39,4 +43,17 @@ def confirm_upload(
     então dispara uma mensagem para o SQS
     e atualiza o status do pipeline
     """
+
     return use_case.execute(request.task_id)
+
+@router.get("/list", ...)
+def list_videos(
+    use_case: ListVideosUseCase = Depends(get_list_videos_use_case),
+    token_payload: dict = Depends(verify_token)
+):
+    user_email = token_payload.get("sub")
+    
+    if not user_email:
+        raise HTTPException(status_code=401, detail="Token inválido: Email não encontrado")
+
+    return use_case.execute(user_email)

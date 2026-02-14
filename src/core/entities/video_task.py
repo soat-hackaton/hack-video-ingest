@@ -7,4 +7,5 @@ class VideoTask:
     filename: str
     s3_path: str
     status: str
+    user_email: str
     created_at: datetime = datetime.now()
