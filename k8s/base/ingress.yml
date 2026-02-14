@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: video-ingest-ingress
+  namespace: video-ingest-ns
+  annotations:
+    konghq.com/strip-path: "false"
+spec:
+  ingressClassName: kong
+  rules:
+    - http:
+        paths:
+          - path: /api/video
+            pathType: Prefix
+            backend:
+              service:
+                name: video-ingest-svc
+                port:
+                  number: 80
