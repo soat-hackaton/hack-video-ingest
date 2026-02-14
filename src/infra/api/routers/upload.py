@@ -8,7 +8,7 @@ from src.infra.api.dependencies import (
     get_confirm_use_case,
     get_list_videos_use_case
 )
-from src.infra.api.security import verify_token
+from src.infra.api.security import verify_token, get_current_user_email
 
 # Protege TODAS as rotas deste arquivo com JWT
 router = APIRouter(dependencies=[Depends(verify_token)])
@@ -52,15 +52,16 @@ def confirm_upload(
 
 @router.get(
     "/list", 
+    response_model=List[VideoItemResponse],
     status_code=200
 )
 def list_videos(
-    use_case: ListVideosUseCase = Depends(get_list_videos_use_case),
-    token_payload: dict = Depends(verify_token)
+    user_email: str = Depends(get_current_user_email),
+    use_case: ListVideosUseCase = Depends(get_list_videos_use_case)
 ):
-    user_email = token_payload.get("sub")
-    
-    if not user_email:
-        raise HTTPException(status_code=401, detail="Token inválido: Email não encontrado")
+    """
+    Lista os videos enviados para processamento
+    por usuário
+    """
 
     return use_case.execute(user_email)

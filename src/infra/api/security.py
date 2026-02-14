@@ -37,3 +37,9 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security_sc
             detail="Token inválido",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+    def get_current_user_email(payload: dict = Depends(verify_token)) -> str:
+        email = payload.get("sub")
+        if not email:
+            raise HTTPException(status_code=401, detail="Token inválido: Email ausente")
+        return email
