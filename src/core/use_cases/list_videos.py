@@ -3,15 +3,22 @@ class ListVideosUseCase:
         self.repo = repo
 
     def execute(self, user_email: str):
+        # Busca a lista crua do repositório
         items = self.repo.list_by_user(user_email)
         
-        return [
+        # Formata cada item individualmente
+        formatted_items = [
             {
                 "id": item.get("id"),
                 "filename": item.get("filename"),
                 "status": item.get("status", "pending"),
                 "created_at": item.get("created_at"),
-                "downloadUrl": item.get("s3_path") if item.get("status") == "processed" else None
+                "download_url": item.get("s3_path") if item.get("status") == "processed" else None
             }
             for item in items
         ]
+
+        # Retorna um objeto com a chave "items"
+        return {
+            "items": formatted_items
+        }
