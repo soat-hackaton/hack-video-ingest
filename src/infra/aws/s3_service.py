@@ -1,10 +1,11 @@
 import boto3
 from botocore.exceptions import ClientError
 from src.core.interfaces import StorageInterface
+from botocore.config import Config
 
 class S3Service(StorageInterface):
     def __init__(self, bucket_name: str):
-        self.client = boto3.client('s3')
+        self.client = boto3.client('s3', config=Config(signature_version="s3v4"))
         self.bucket = bucket_name
 
     def generate_presigned_url(self, key: str, content_type: str) -> str:
