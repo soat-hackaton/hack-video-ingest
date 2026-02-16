@@ -36,7 +36,7 @@ class RequestUploadUseCase:
                 id=task_id,
                 filename=filename,
                 s3_path=s3_key,
-                status=TaskStatus.QUEUE.value,
+                status=TaskStatus.QUEUED.value,
                 user_email=user_email
             )
             self.repo.save(task)

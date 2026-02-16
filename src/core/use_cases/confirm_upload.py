@@ -3,6 +3,7 @@ import os
 from src.core.interfaces import MessageBrokerInterface, RepositoryInterface, StorageInterface
 from src.core.exceptions import ResourceNotFoundException, BusinessRuleException
 from src.infra.logging.context import set_correlation_id
+from src.infra.api.schemas.upload import TaskStatus
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,7 @@ class ConfirmUploadUseCase:
             raise ResourceNotFoundException("Task não encontrada")
 
         if not self.storage.file_exists(item['s3_path']):
-            self.repo.update_status(task_id, "UPLOAD_FAILED")
+            self.repo.update_status(task_id, TaskStatus.ERROR.value)
             logger.error("Arquivo não encontrado no S3 após confirmação do cliente")
             raise BusinessRuleException("Arquivo não encontrado no Storage")
 
@@ -45,12 +46,12 @@ class ConfirmUploadUseCase:
             logger.info("Enviando mensagem para SQS", extra={"queue_url": self.queue_url})
             self.broker.send_message(self.queue_url, message)
 
-            self.repo.update_status(task_id, "QUEUED")
+            self.repo.update_status(task_id, TaskStatus.QUEUED.value)
 
             logger.info("Processo de ingestão finalizado com sucesso", extra={"step": "ingest_complete"})
             return {"status": "success", "message": "Vídeo enfileirado para processamento"}
 
         except Exception as e:
-            self.repo.update_status(task_id, "SQS_ERROR")
+            self.repo.update_status(task_id, TaskStatus.ERROR.value)
             logger.error("Erro crítico ao processar confirmação", exc_info=True)
             raise e
