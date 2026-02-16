@@ -1,3 +1,4 @@
+from enum import Enum
 from pydantic import BaseModel
 
 class UploadVideoRequest(BaseModel):
@@ -7,3 +8,14 @@ class UploadVideoRequest(BaseModel):
 class UploadVideoResponse(BaseModel):
     upload_url: str
     task_id: str
+
+
+class TaskStatus(str, Enum):
+    PENDING = "PENDING"
+    PROCESSING = "PROCESSING"
+    DONE = "DONE"
+
+
+class UpdateTaskStatusRequest(BaseModel):
+    status: TaskStatus
+    user_email: str

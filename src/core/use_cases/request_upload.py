@@ -21,20 +21,20 @@ class RequestUploadUseCase:
         })
 
         s3_key = f"uploads/{task_id}"
-        
+
         try:
             # Gera URL assinada
             url = self.storage.generate_presigned_url(s3_key, content_type)
-            
+
             logger.info("URL Pré-assinada gerada com sucesso", extra={
                 "s3_key": s3_key,
                 "step": "request_presigned_url"
             })
 
             task = VideoTask (
-                id=task_id, 
-                filename=filename, 
-                s3_path=s3_key, 
+                id=task_id,
+                filename=filename,
+                s3_path=s3_key,
                 status="PENDING",
                 user_email=user_email
             )
@@ -44,9 +44,9 @@ class RequestUploadUseCase:
                 "s3_key": s3_key,
                 "step": "request_upload_success"
             })
-            
+
             return {
-                "upload_url": url, 
+                "upload_url": url,
                 "task_id": task_id
             }
         except Exception as e:

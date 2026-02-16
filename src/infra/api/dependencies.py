@@ -1,11 +1,13 @@
 import os
 import boto3
+from src.infra.email.gmail_email_sender import GmailSmtpEmailSender
+from src.core.use_cases.update_task import UpdateTaskUseCase
 from fastapi import Depends
 from src.infra.aws.s3_service import S3Service
 from src.infra.persistence.dynamo_repository import DynamoDBVideoRepo
 from src.infra.aws.sqs_service import SQSService
 from src.core.use_cases import (
-    RequestUploadUseCase, 
+    RequestUploadUseCase,
     ConfirmUploadUseCase,
     ListVideosUseCase
 )
@@ -36,8 +38,8 @@ def get_confirm_use_case(
 ):
     # Aqui injetamos a URL da fila explicitamente
     return ConfirmUploadUseCase(
-        repo=repo, 
-        storage=s3, 
+        repo=repo,
+        storage=s3,
         broker=sqs,
         queue_url=os.getenv("SQS_QUEUE_URL")
     )
@@ -49,3 +51,13 @@ def get_list_videos_use_case(
     Injeta o Repositório do DynamoDB dentro do Caso de Uso de Listagem
     """
     return ListVideosUseCase(repo=repo)
+
+
+def get_update_task_use_case(
+    repo: DynamoDBVideoRepo = Depends(get_repo)
+):
+    """
+    Injeta o Repositório do DynamoDB dentro do Caso de Uso de Listagem
+    """
+    email_sender = GmailSmtpEmailSender()
+    return UpdateTaskUseCase(repo=repo, email_sender=email_sender)

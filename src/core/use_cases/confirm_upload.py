@@ -8,15 +8,15 @@ logger = logging.getLogger(__name__)
 
 class ConfirmUploadUseCase:
     def __init__(
-        self, 
-        repo: RepositoryInterface, 
-        storage: StorageInterface, 
+        self,
+        repo: RepositoryInterface,
+        storage: StorageInterface,
         broker: MessageBrokerInterface,
         queue_url: str
     ):
         self.repo = repo
         self.storage = storage
-        self.broker = broker        
+        self.broker = broker
         self.queue_url = queue_url
 
     def execute(self, task_id: str):
@@ -38,17 +38,18 @@ class ConfirmUploadUseCase:
             message = {
                 "task_id": task_id,
                 "s3_path": item['s3_path'],
-                "filename": item['filename']
+                "filename": item['filename'],
+                "user_email": item['user_email']
             }
 
             logger.info("Enviando mensagem para SQS", extra={"queue_url": self.queue_url})
             self.broker.send_message(self.queue_url, message)
-            
+
             self.repo.update_status(task_id, "QUEUED")
-            
+
             logger.info("Processo de ingestão finalizado com sucesso", extra={"step": "ingest_complete"})
             return {"status": "success", "message": "Vídeo enfileirado para processamento"}
-            
+
         except Exception as e:
             self.repo.update_status(task_id, "SQS_ERROR")
             logger.error("Erro crítico ao processar confirmação", exc_info=True)

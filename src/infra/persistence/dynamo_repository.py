@@ -1,4 +1,6 @@
+from datetime import datetime
 from boto3.dynamodb.conditions import Key
+from src.infra.api.schemas.upload import TaskStatus
 from src.core.interfaces import RepositoryInterface
 from src.core.entities.video_task import VideoTask
 from src.infra.aws.session import get_boto_session
@@ -29,7 +31,7 @@ class DynamoDBVideoRepo(RepositoryInterface):
             ExpressionAttributeNames={'#st': 'status'},
             ExpressionAttributeValues={':s': new_status}
         )
-    
+
     def find_by_id(self, task_id: str) -> dict:
         response = self.table.get_item(Key={'PK': task_id, 'SK': "METADATA"})
         return response.get('Item')
@@ -39,8 +41,29 @@ class DynamoDBVideoRepo(RepositoryInterface):
             IndexName='UserEmailIndex',
             KeyConditionExpression=Key('user_email').eq(user_email)
         )
-        
+
         # Retornar ordenado pela data de criação
         items = response.get('Items', [])
-        items.sort(key=lambda x: x['created_at'], reverse=True) 
+        items.sort(key=lambda x: x['created_at'], reverse=True)
         return items
+
+    def update_status(self, task_id: str, new_status: TaskStatus) -> dict:
+        response = self.table.update_item(
+            Key={
+                'PK': task_id,
+                'SK': "METADATA"
+            },
+            UpdateExpression="SET #st = :s, #updated = :u",
+            ExpressionAttributeNames={
+                '#st': 'status',
+                '#updated': 'updated_at'
+            },
+            ExpressionAttributeValues={
+                ':s': new_status.value,
+                ':u': datetime.utcnow().isoformat()
+            },
+            ConditionExpression="attribute_exists(PK)",
+            ReturnValues="ALL_NEW"
+        )
+
+        return response.get("Attributes")
