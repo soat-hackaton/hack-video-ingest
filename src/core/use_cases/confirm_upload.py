@@ -31,7 +31,7 @@ class ConfirmUploadUseCase:
             raise ResourceNotFoundException("Task não encontrada")
 
         if not self.storage.file_exists(item['s3_path']):
-            self.repo.update_status(task_id, TaskStatus.ERROR.value)
+            self.repo.update_status(task_id, TaskStatus.ERROR)
             logger.error("Arquivo não encontrado no S3 após confirmação do cliente")
             raise BusinessRuleException("Arquivo não encontrado no Storage")
 
@@ -46,12 +46,12 @@ class ConfirmUploadUseCase:
             logger.info("Enviando mensagem para SQS", extra={"queue_url": self.queue_url})
             self.broker.send_message(self.queue_url, message)
 
-            self.repo.update_status(task_id, TaskStatus.QUEUED.value)
+            self.repo.update_status(task_id, TaskStatus.QUEUED)
 
             logger.info("Processo de ingestão finalizado com sucesso", extra={"step": "ingest_complete"})
             return {"status": "success", "message": "Vídeo enfileirado para processamento"}
 
         except Exception as e:
-            self.repo.update_status(task_id, TaskStatus.ERROR.value)
+            self.repo.update_status(task_id, TaskStatus.ERROR)
             logger.error("Erro crítico ao processar confirmação", exc_info=True)
             raise e
