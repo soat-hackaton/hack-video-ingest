@@ -1,3 +1,5 @@
+from src.infra.api.schemas.upload import TaskStatus
+
 class ListVideosUseCase:
     def __init__(self, repo):
         self.repo = repo
@@ -11,7 +13,7 @@ class ListVideosUseCase:
             {
                 "id": item.get("id"),
                 "filename": item.get("filename"),
-                "status": item.get("status", "pending"),
+                "status": item.get("status", TaskStatus.ERROR.value),
                 "created_at": item.get("created_at"),
                 "download_url": item.get("s3_path") if item.get("status") == "processed" else None
             }

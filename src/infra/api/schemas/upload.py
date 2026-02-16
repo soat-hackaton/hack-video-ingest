@@ -11,7 +11,8 @@ class UploadVideoResponse(BaseModel):
 
 
 class TaskStatus(str, Enum):
-    PENDING = "PENDING"
+    ERROR = "ERROR"
+    QUEUE = "QUEUE"
     PROCESSING = "PROCESSING"
     DONE = "DONE"
 
