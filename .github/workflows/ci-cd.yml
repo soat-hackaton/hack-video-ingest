@@ -9,6 +9,8 @@ on:
 env:
   ECR_REPOSITORY: hack-video-ingest
   EKS_CLUSTER_NAME: hack-infra-eks
+  S3_BUCKET_NAME: 'hack-uploaded-videos'
+  DYNAMO_TABLE_NAME: 'hack-video-processing-db'
 
 jobs:
   # Job 1: Qualidade de Código
@@ -105,9 +107,6 @@ jobs:
         env:
           ECR_REGISTRY: ${{ needs.build_and_push_ecr.outputs.registry }}
           IMAGE_TAG: ${{ needs.build_and_push_ecr.outputs.image_tag }}
-          
-          S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
-          DYNAMO_TABLE_NAME: ${{ secrets.DYNAMO_TABLE_NAME }}
           SQS_QUEUE_URL: ${{ secrets.SQS_QUEUE_URL }}
         
         run: |
