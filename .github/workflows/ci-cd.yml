@@ -7,9 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  # Defina o nome do repositório ECR aqui para facilitar reuso
   ECR_REPOSITORY: hack-video-ingest
-  AWS_REGION: us-west-2
   EKS_CLUSTER_NAME: hack-infra-eks
 
 jobs:
@@ -60,7 +58,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: 3. Login no Amazon ECR
         id: login-ecr
@@ -93,10 +91,10 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: 3. Atualizar Kubeconfig
-        run: aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
+        run: aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
 
       - name: 4. Instalar Kustomize (se necessário)
         run: |
@@ -121,6 +119,7 @@ jobs:
             --from-literal=aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }} \
             --from-literal=aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
             --from-literal=aws_session_token=${{ secrets.AWS_SESSION_TOKEN }} \
+            --from-literal=aws_region=${{ secrets.AWS_REGION }} \
             --dry-run=client -o yaml | kubectl apply -f -
             
           kubectl create secret generic app-secrets -n video-ingest-ns \

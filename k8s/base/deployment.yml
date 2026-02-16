@@ -47,6 +47,11 @@ spec:
                 secretKeyRef:
                   name: aws-credentials
                   key: aws_session_token
+            - name: AWS_REGION
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: aws_region
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
