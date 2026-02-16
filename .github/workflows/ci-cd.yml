@@ -105,15 +105,17 @@ jobs:
 
       - name: 5. Preparar e Aplicar Manifestos
         env:
-          ECR_REGISTRY: ${{ needs.build_and_push_ecr.outputs.registry }}
           IMAGE_TAG: ${{ needs.build_and_push_ecr.outputs.image_tag }}
           SQS_QUEUE_URL: ${{ secrets.SQS_QUEUE_URL }}
         
         run: |
+          ECR_REGISTRY="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com"
+
           # Criação do namespace  
           kubectl apply -f k8s/base/namespace.yml
 
           # Cria/Atualiza os secrets imperativamente
+          kubectl delete secret aws-credentials -n video-ingest-ns --ignore-not-found
           kubectl create secret generic aws-credentials -n video-ingest-ns \
             --from-literal=aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }} \
             --from-literal=aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
@@ -121,6 +123,7 @@ jobs:
             --from-literal=aws_region=${{ secrets.AWS_REGION }} \
             --dry-run=client -o yaml | kubectl apply -f -
             
+          kubectl delete secret app-secrets -n video-ingest-ns --ignore-not-found
           kubectl create secret generic app-secrets -n video-ingest-ns \
             --from-literal=jwt_secret=${{ secrets.JWT_SECRET }} \
             --dry-run=client -o yaml | kubectl apply -f -
