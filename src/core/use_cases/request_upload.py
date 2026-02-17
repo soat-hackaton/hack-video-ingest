@@ -22,6 +22,7 @@ class RequestUploadUseCase:
         })
 
         s3_key = f"uploads/{task_id}"
+        s3_download_key = f"results/frames_{task_id}"
 
         try:
             url = self.storage.generate_presigned_url(s3_key, content_type)
@@ -35,7 +36,7 @@ class RequestUploadUseCase:
                 id=task_id,
                 filename=filename,
                 s3_path=s3_key,
-                s3_download_url="",
+                s3_download_path=s3_download_key,
                 status=TaskStatus.QUEUED.value,
                 user_email=user_email
             )
