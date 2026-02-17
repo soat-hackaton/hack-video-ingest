@@ -6,13 +6,15 @@ from botocore.config import Config
 
 class S3Service(StorageInterface):
     def __init__(self):
-        my_config = Config(
-            region_name="us-west-2",
-            signature_version="s3v4"
-        )
-
-        self.client = boto3.client('s3', config=my_config)
         self.bucket = os.getenv("S3_BUCKET_NAME")
+        self.region = os.getenv("AWS_REGION", "us-west-2")
+
+        self.client = boto3.client(
+            's3',
+            region_name=self.region,
+            endpoint_url=f"https://s3.{self.region}.amazonaws.com", 
+            config=Config(signature_version='s3v4')
+        )
 
     def generate_presigned_url(self, key: str, content_type: str) -> str:
         try:
