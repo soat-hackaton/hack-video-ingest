@@ -147,7 +147,7 @@ class UpdateVideoStatusUseCase:
                             
                             <tr>
                                 <td style="background:#f9fafb; padding:15px; text-align:center; font-size:12px; color:#9ca3af;">
-                                    Hackathon Video Ingest &copy; 2026
+                                    FIAP Hackathon &copy; 2026
                                 </td>
                             </tr>
                         </table>
