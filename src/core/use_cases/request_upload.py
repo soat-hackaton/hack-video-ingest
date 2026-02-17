@@ -45,11 +45,12 @@ class RequestUploadUseCase:
                 "step": "request_upload_success"
             })
 
-            return {
-                "upload_url": url,
-                "task_id": task_id
-            }
+            return {"upload_url": url, "task_id": task_id}
+
         except Exception as e:
-            self.repo.update_status(task_id, TaskStatus.ERROR)
-            logger.error("Erro ao gerar solicitação de upload", exc_info=True)
+            logger.error("Erro crítico ao gerar solicitação de upload. Atualizando status para ERROR.", exc_info=True)
+            try:
+                self.repo.update_status(task_id, TaskStatus.ERROR)
+            except Exception as db_error:
+                logger.error(f"Falha secundária ao tentar atualizar status para ERROR: {db_error}")
             raise e

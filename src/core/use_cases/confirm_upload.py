@@ -25,17 +25,16 @@ class ConfirmUploadUseCase:
 
         logger.info("Iniciando confirmação de upload", extra={"step": "confirm_start"})
 
-        item = self.repo.find_by_id(task_id)
-        if not item:
-            logger.warning("Tentativa de confirmação para Task inexistente")
-            raise ResourceNotFoundException("Task não encontrada")
-
-        if not self.storage.file_exists(item['s3_path']):
-            self.repo.update_status(task_id, TaskStatus.ERROR)
-            logger.error("Arquivo não encontrado no S3 após confirmação do cliente")
-            raise BusinessRuleException("Arquivo não encontrado no Storage")
-
         try:
+            item = self.repo.find_by_id(task_id)
+            if not item:
+                logger.warning("Tentativa de confirmação para Task inexistente")
+                raise ResourceNotFoundException("Task não encontrada")
+
+            if not self.storage.file_exists(item['s3_path']):
+                logger.error("Arquivo não encontrado no S3 após confirmação do cliente")
+                raise BusinessRuleException("Arquivo não encontrado no Storage")
+        
             message = {
                 "task_id": task_id,
                 "s3_path": item['s3_path'],
@@ -49,9 +48,13 @@ class ConfirmUploadUseCase:
             self.repo.update_status(task_id, TaskStatus.QUEUED)
 
             logger.info("Processo de ingestão finalizado com sucesso", extra={"step": "ingest_complete"})
+            
             return {"status": "success", "message": "Vídeo enfileirado para processamento"}
 
         except Exception as e:
-            self.repo.update_status(task_id, TaskStatus.ERROR)
-            logger.error("Erro crítico ao processar confirmação", exc_info=True)
+            logger.error("Erro crítico ao processar confirmação. Atualizando status para ERROR.", exc_info=True)
+            try:
+                self.repo.update_status(task_id, TaskStatus.ERROR)
+            except Exception as db_error:
+                logger.error(f"Falha secundária ao tentar atualizar status para ERROR: {db_error}")
             raise e
