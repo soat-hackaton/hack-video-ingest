@@ -1,5 +1,6 @@
 from enum import Enum
 from pydantic import BaseModel
+from typing import Optional
 
 class UploadVideoRequest(BaseModel):
     filename: str
@@ -16,7 +17,7 @@ class TaskStatus(str, Enum):
     PROCESSING = "PROCESSING"
     DONE = "DONE"
 
-
 class UpdateTaskStatusRequest(BaseModel):
     status: TaskStatus
     user_email: str
+    s3_download_path: Optional[str] = None

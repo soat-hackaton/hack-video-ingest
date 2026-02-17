@@ -11,20 +11,19 @@ class UpdateTaskUseCase:
         self.update_status_use_case = update_status_use_case
         self.storage = storage
 
-    def execute(self, task_id: str, status: str, user_email: str):
+    def execute(self, task_id: str, status: str, user_email: str, s3_download_path: str = None):
         set_correlation_id(task_id)
         
         logger.info(f"Atualizando status da task {task_id} para {status}")
 
-        self.repo.update_status(task_id, status)
+        updated_task = self.repo.update_status(task_id, status, s3_download_path)
 
         try:
-            task = self.repo.find_by_id(task_id)
-            filename = task.get("filename", "Vídeo Sem Nome") if task else "Vídeo Desconhecido"
+            filename = updated_task.get("filename", "Vídeo")
 
             download_url = None
             if status in ["DONE"]:
-                s3_path = task.get("s3_download_path")
+                s3_path = updated_task.get("s3_download_path")
                 if s3_path:
                     if not s3_path.endswith('.zip'):
                         s3_path += '.zip'

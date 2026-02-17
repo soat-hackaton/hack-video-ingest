@@ -83,7 +83,11 @@ def update_task_status(
     use_case: UpdateTaskUseCase = Depends(get_update_task_use_case)
 ):
     """
-    Lista os videos enviados para processamento
-    por usuário
+    Atualiza o status da tarefa e processa notificações
     """
-    return use_case.execute(task_id, request_status.status, request_status.user_email)
+    return use_case.execute(
+        task_id=task_id, 
+        status=request_status.status, 
+        user_email=request_status.user_email,
+        s3_download_path=request_status.s3_download_path
+    )
