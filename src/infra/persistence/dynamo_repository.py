@@ -18,6 +18,7 @@ class DynamoDBVideoRepo(RepositoryInterface):
             'id': task.id,
             'filename': task.filename,
             's3_path': task.s3_path,
+            's3_download_url': task.s3_download_url,
             'status': task.status,
             'user_email': task.user_email,
             'created_at': task.created_at.isoformat()

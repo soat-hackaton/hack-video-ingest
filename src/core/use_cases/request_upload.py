@@ -35,6 +35,7 @@ class RequestUploadUseCase:
                 id=task_id,
                 filename=filename,
                 s3_path=s3_key,
+                s3_download_url="",
                 status=TaskStatus.QUEUED.value,
                 user_email=user_email
             )
