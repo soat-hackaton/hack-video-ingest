@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 from boto3.dynamodb.conditions import Key
 from src.infra.api.schemas.upload import TaskStatus
@@ -6,10 +7,10 @@ from src.core.entities.video_task import VideoTask
 from src.infra.aws.session import get_boto_session
 
 class DynamoDBVideoRepo(RepositoryInterface):
-    def __init__(self, table_name: str):
+    def __init__(self):
         session = get_boto_session()
         self.dynamodb = session.resource('dynamodb')
-        self.table = self.dynamodb.Table(table_name)
+        self.table = self.dynamodb.Table(os.getenv("DYNAMO_TABLE_NAME"))
 
     def save(self, task: VideoTask):
         item = {

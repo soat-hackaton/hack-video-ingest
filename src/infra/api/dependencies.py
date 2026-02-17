@@ -1,15 +1,20 @@
 import os
-import boto3
-from src.infra.email.gmail_email_sender import GmailSmtpEmailSender
-from src.core.use_cases.update_task import UpdateTaskUseCase
 from fastapi import Depends
+from src.infra.email.gmail_email_sender import GmailSmtpEmailSender
 from src.infra.aws.s3_service import S3Service
 from src.infra.persistence.dynamo_repository import DynamoDBVideoRepo
 from src.infra.aws.sqs_service import SQSService
+
+# Interfaces
+from src.core.interfaces import EmailSender
+
+# Use Cases
 from src.core.use_cases import (
     RequestUploadUseCase,
     ConfirmUploadUseCase,
-    ListVideosUseCase
+    ListVideosUseCase,
+    UpdateTaskUseCase,
+    UpdateVideoStatusUseCase
 )
 
 # --- Factories de Serviços Básicos ---
@@ -17,26 +22,29 @@ def get_s3_service():
     return S3Service()
 
 def get_repo():
-    return DynamoDBVideoRepo(table_name=os.getenv("DYNAMO_TABLE_NAME"))
+    return DynamoDBVideoRepo()
 
 def get_sqs_service():
-    # O SQSService interno já deve lidar com a sessão boto3 internamente
-    # ou receber o client pronto. Vamos assumir que ele se vira bem.
     return SQSService()
 
+def get_email_sender() -> EmailSender:
+    return GmailEmailSender()
+
 # --- Factories de Use Cases ---
+
+# Request Upload
 def get_request_upload_use_case(
     s3: S3Service = Depends(get_s3_service),
     repo: DynamoDBVideoRepo = Depends(get_repo)
 ):
     return RequestUploadUseCase(storage=s3, repo=repo)
 
+# Confirm Upload
 def get_confirm_use_case(
     repo: DynamoDBVideoRepo = Depends(get_repo),
     s3: S3Service = Depends(get_s3_service),
     sqs: SQSService = Depends(get_sqs_service)
 ):
-    # Aqui injetamos a URL da fila explicitamente
     return ConfirmUploadUseCase(
         repo=repo,
         storage=s3,
@@ -44,6 +52,7 @@ def get_confirm_use_case(
         queue_url=os.getenv("SQS_QUEUE_URL")
     )
 
+# List Videos
 def get_list_videos_use_case(
     repo: DynamoDBVideoRepo = Depends(get_repo),
     storage: S3Service = Depends(get_s3_service)
@@ -53,12 +62,19 @@ def get_list_videos_use_case(
     """
     return ListVideosUseCase(repo=repo, storage=storage)
 
+# Update Video Status
+def get_update_video_status_use_case(
+    email_sender: EmailSender = Depends(get_email_sender)
+) -> UpdateVideoStatusUseCase:
+    return UpdateVideoStatusUseCase(email_sender)
 
+# Update Task
 def get_update_task_use_case(
-    repo: DynamoDBVideoRepo = Depends(get_repo)
+    repo: DynamoDBVideoRepo = Depends(get_repo),
+    update_status_use_case: UpdateVideoStatusUseCase = Depends(get_update_video_status_use_case)
 ):
     """
-    Injeta o Repositório do DynamoDB dentro do Caso de Uso de Listagem
+    Injeta o Repositório e o Caso de Uso de Status
     """
-    email_sender = GmailSmtpEmailSender()
-    return UpdateTaskUseCase(repo=repo, email_sender=email_sender)
+
+    return UpdateTaskUseCase(repo=repo, update_status_use_case=update_status_use_case)
