@@ -11,6 +11,7 @@ env:
   EKS_CLUSTER_NAME: hack-infra-eks
   S3_BUCKET_NAME: 'hack-uploaded-videos'
   DYNAMO_TABLE_NAME: 'hack-video-processing-db'
+  SQS_QUEUE_NAME: 'hack-video-processing-queue'
 
 jobs:
   # Job 1: Qualidade de Código
@@ -106,10 +107,23 @@ jobs:
       - name: 5. Preparar e Aplicar Manifestos
         env:
           IMAGE_TAG: ${{ needs.build_and_push_ecr.outputs.image_tag }}
-          SQS_QUEUE_URL: ${{ secrets.SQS_QUEUE_URL }}
+          S3_BUCKET_NAME: ${{ env.S3_BUCKET_NAME }}
+          DYNAMO_TABLE_NAME: ${{ env.DYNAMO_TABLE_NAME }}
+          SQS_QUEUE_NAME: ${{ env.SQS_QUEUE_NAME }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
         
         run: |
-          ECR_REGISTRY="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com"
+          # Obtém o Account ID dinamicamente
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          
+          # Monta a URL do Registry
+          ECR_REGISTRY="${ACCOUNT_ID}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com"
+          
+          # Monta a URL da SQS
+          export SQS_QUEUE_URL="https://sqs.${{ secrets.AWS_REGION }}.amazonaws.com/${ACCOUNT_ID}/${{ env.SQS_QUEUE_NAME }}"
+          
+          echo "Registry: $ECR_REGISTRY"
+          echo "SQS URL: $SQS_QUEUE_URL"  
 
           # Criação do namespace  
           kubectl apply -f k8s/base/namespace.yml
@@ -137,8 +151,8 @@ jobs:
           # Gera o manifesto final (Build)
           kustomize build . > final_manifest.yaml
 
-          # Substitui as variáveis de ambiente (${S3_BUCKET_NAME}, etc) no arquivo gerado
-          envsubst '${S3_BUCKET_NAME} ${DYNAMO_TABLE_NAME} ${SQS_QUEUE_URL}' < final_manifest.yaml > deploy.yaml
+          # Substitui as variáveis de ambiente
+          envsubst '${S3_BUCKET_NAME} ${DYNAMO_TABLE_NAME} ${SQS_QUEUE_URL} ${AWS_REGION}' < final_manifest.yaml > deploy.yaml
 
           # Aplica no Cluster
           kubectl apply -f deploy.yaml
