@@ -22,7 +22,7 @@ class RequestUploadUseCase:
         })
 
         s3_key = f"uploads/{task_id}"
-        s3_download_key = f"results/frames_{task_id}.zip"
+        s3_download_key = f"results/{task_id}.zip"
 
         try:
             url = self.storage.generate_presigned_url(s3_key, content_type)
