@@ -24,7 +24,6 @@ class RequestUploadUseCase:
         s3_key = f"uploads/{task_id}"
 
         try:
-            # Gera URL assinada
             url = self.storage.generate_presigned_url(s3_key, content_type)
 
             logger.info("URL Pré-assinada gerada com sucesso", extra={
@@ -51,5 +50,6 @@ class RequestUploadUseCase:
                 "task_id": task_id
             }
         except Exception as e:
+            self.repo.update_status(task_id, TaskStatus.ERROR)
             logger.error("Erro ao gerar solicitação de upload", exc_info=True)
             raise e
