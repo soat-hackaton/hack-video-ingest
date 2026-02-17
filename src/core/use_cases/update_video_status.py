@@ -27,27 +27,21 @@ class UpdateVideoStatusUseCase:
         """
         Map que despacha para o método de template correspondente.
         """
+        if status == "DONE":
+            return self._template_done(download_url)
+
         templates_map = {
-            # Sucesso
-            "DONE": self._template_concluido(download_url),
-            
-            # Erro
-            "ERROR": self._template_erro,
-            
-            # Processando
-            "PROCESSING": self._template_processando,
-            
-            # Na Fila
-            "QUEUED": self._template_na_fila
+            "ERROR": self._template_error,
+            "PROCESSING": self._template_processing,
+            "QUEUED": self._template_queued
         }
 
-        # Pega o método do map ou usa um default
-        template_method = templates_map.get(status, self._template_generico)
+        template_method = templates_map.get(status, self._template_generic)
         return template_method()
 
     # --- TEMPLATES ESPECÍFICOS ---
 
-    def _template_concluido(self, download_url: str = None) -> str:
+    def _template_done(self, download_url: str = None) -> str:
         title = "Processamento Concluído!"
         message = (
             "Seu vídeo foi processado com sucesso e todas as imagens foram extraídas. "
@@ -60,7 +54,7 @@ class UpdateVideoStatusUseCase:
         
         return self._build_base_html(title, message, cta_text, footer_text, color, link)
 
-    def _template_erro(self) -> str:
+    def _template_error(self) -> str:
         title = "Falha no Processamento"
         message = (
             "Infelizmente ocorreu um erro ao processar seu vídeo. "
@@ -72,7 +66,7 @@ class UpdateVideoStatusUseCase:
         
         return self._build_base_html(title, message, cta_text, footer_text, color)
 
-    def _template_processando(self) -> str:
+    def _template_processing(self) -> str:
         title = "Vídeo em Processamento"
         message = (
             "Estamos processando seu vídeo neste momento. "
@@ -84,7 +78,7 @@ class UpdateVideoStatusUseCase:
         
         return self._build_base_html(title, message, cta_text, footer_text, color)
 
-    def _template_na_fila(self) -> str:
+    def _template_queued(self) -> str:
         title = "Vídeo na Fila"
         message = (
             "Recebemos seu vídeo! Ele está na fila e será processado em breve. "
@@ -96,7 +90,7 @@ class UpdateVideoStatusUseCase:
         
         return self._build_base_html(title, message, cta_text, footer_text, color)
 
-    def _template_generico(self) -> str:
+    def _template_generic(self) -> str:
         return self._build_base_html(
             "Status Atualizado", 
             "O status do seu vídeo foi alterado.", 
@@ -107,10 +101,7 @@ class UpdateVideoStatusUseCase:
 
     # --- WRAPPER HTML ---
 
-    def _build_base_html(self, title, message, cta_text, footer_text, color, link="#") -> str:
-        # Nota: URL do frontend seria ideal vir via env var ou config. 
-        # Coloquei um placeholder '#' no href do botão.
-        
+    def _build_base_html(self, title, message, cta_text, footer_text, color, link="#") -> str:        
         return f"""
         <!DOCTYPE html>
         <html>

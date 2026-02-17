@@ -23,12 +23,8 @@ class UpdateTaskUseCase:
 
             download_url = None
             if status in ["DONE"]:
-                s3_path = updated_task.get("s3_download_path")
-                if s3_path:
-                    if not s3_path.endswith('.zip'):
-                        s3_path += '.zip'
-                    
-                    download_url = self.storage.generate_download_url(s3_path)
+                s3_path = updated_task.get("s3_download_path")          
+                download_url = self.storage.generate_download_url(s3_path)
 
             self.update_status_use_case.execute(
                 user_email=user_email,
