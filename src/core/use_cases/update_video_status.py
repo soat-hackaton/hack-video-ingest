@@ -5,12 +5,12 @@ class UpdateVideoStatusUseCase:
     def __init__(self, email_sender: EmailSender):
         self.email_sender = email_sender
 
-    def execute(self, user_email: str, status: str, filename: str) -> None:
+    def execute(self, user_email: str, status: str, filename: str, download_url: str = None) -> None:
         # Normaliza o status para garantir que o map encontre a chave
         normalized_status = status.upper().strip()
         
         # Busca o HTML específico para o status
-        html_content = self.get_template_by_status(normalized_status)
+        html_content = self.get_template_by_status(normalized_status, download_url)
 
         translated_status = self._translate_status(normalized_status)
         subject = f"Atualização do Vídeo '{filename}': {translated_status}"
@@ -23,13 +23,13 @@ class UpdateVideoStatusUseCase:
             html=html_content
         )
 
-    def get_template_by_status(self, status: str) -> str:
+    def get_template_by_status(self, status: str, download_url: str = None) -> str:
         """
         Map que despacha para o método de template correspondente.
         """
         templates_map = {
             # Sucesso
-            "DONE": self._template_concluido,
+            "DONE": self._template_concluido(download_url),
             
             # Erro
             "ERROR": self._template_erro,
@@ -47,7 +47,7 @@ class UpdateVideoStatusUseCase:
 
     # --- TEMPLATES ESPECÍFICOS ---
 
-    def _template_concluido(self) -> str:
+    def _template_concluido(self, download_url: str = None) -> str:
         title = "Processamento Concluído!"
         message = (
             "Seu vídeo foi processado com sucesso e todas as imagens foram extraídas. "
@@ -56,8 +56,9 @@ class UpdateVideoStatusUseCase:
         cta_text = "Baixar Arquivo .ZIP"
         footer_text = "Aproveite para enviar um novo vídeo agora mesmo."
         color = "#10b981" # Verde
+        link = download_url if download_url else "#"
         
-        return self._build_base_html(title, message, cta_text, footer_text, color)
+        return self._build_base_html(title, message, cta_text, footer_text, color, link)
 
     def _template_erro(self) -> str:
         title = "Falha no Processamento"
@@ -106,7 +107,7 @@ class UpdateVideoStatusUseCase:
 
     # --- WRAPPER HTML ---
 
-    def _build_base_html(self, title, message, cta_text, footer_text, color) -> str:
+    def _build_base_html(self, title, message, cta_text, footer_text, color, link="#") -> str:
         # Nota: URL do frontend seria ideal vir via env var ou config. 
         # Coloquei um placeholder '#' no href do botão.
         
@@ -134,7 +135,7 @@ class UpdateVideoStatusUseCase:
                                     </p>
 
                                     <div style="margin-bottom:30px;">
-                                        <a href="#" style="
+                                        <a href="{link}" style="
                                             background-color:{color};
                                             color:#ffffff;
                                             text-decoration:none;
