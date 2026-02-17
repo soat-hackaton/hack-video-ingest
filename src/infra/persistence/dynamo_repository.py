@@ -26,13 +26,13 @@ class DynamoDBVideoRepo(RepositoryInterface):
         }
         self.table.put_item(Item=item)
 
-    def update_status(self, task_id: str, new_status: str):
-        self.table.update_item(
-            Key={'PK': task_id, 'SK': "METADATA"},
-            UpdateExpression="set #st = :s",
-            ExpressionAttributeNames={'#st': 'status'},
-            ExpressionAttributeValues={':s': new_status}
-        )
+    # def update_status(self, task_id: str, new_status: str):
+    #     self.table.update_item(
+    #         Key={'PK': task_id, 'SK': "METADATA"},
+    #         UpdateExpression="set #st = :s",
+    #         ExpressionAttributeNames={'#st': 'status'},
+    #         ExpressionAttributeValues={':s': new_status}
+    #     )
 
     def find_by_id(self, task_id: str) -> dict:
         response = self.table.get_item(Key={'PK': task_id, 'SK': "METADATA"})
@@ -55,11 +55,10 @@ class DynamoDBVideoRepo(RepositoryInterface):
         new_status: TaskStatus, 
         s3_download_path: str = None
     ) -> dict:
-        # Expressão base
         keys = {
             'PK': task_id,
             'SK': "METADATA"
-        },
+        }
         update_expr = "SET #st = :s, #updated = :u"
         expr_names = {
             '#st': 'status',
@@ -70,7 +69,6 @@ class DynamoDBVideoRepo(RepositoryInterface):
             ':u': datetime.utcnow().isoformat()
         }
 
-        # Lógica dinâmica: Se vier o caminho, adicionamos ao update
         if s3_download_path:
             update_expr += ", #path = :p"
             expr_names['#path'] = 's3_download_path'
