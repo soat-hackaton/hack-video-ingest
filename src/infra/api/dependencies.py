@@ -28,7 +28,7 @@ def get_sqs_service():
     return SQSService()
 
 def get_email_sender() -> EmailSender:
-    return GmailEmailSender()
+    return GmailSmtpEmailSender()
 
 # --- Factories de Use Cases ---
 
