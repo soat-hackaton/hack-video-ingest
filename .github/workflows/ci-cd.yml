@@ -9,9 +9,9 @@ on:
 env:
   ECR_REPOSITORY: hack-video-ingest
   EKS_CLUSTER_NAME: hack-infra-eks
-  S3_BUCKET_NAME: 'hack-uploaded-videos'
-  DYNAMO_TABLE_NAME: 'hack-video-processing-db'
-  SQS_QUEUE_NAME: 'hack-video-processing-queue'
+  S3_BUCKET_NAME: hack-uploaded-videos
+  DYNAMO_TABLE_NAME: hack-video-processing-db
+  SQS_QUEUE_NAME: hack-video-processing-queue
 
 jobs:
   # Job 1: Qualidade de Código
