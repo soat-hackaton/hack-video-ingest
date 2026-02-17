@@ -14,7 +14,7 @@ from src.core.use_cases import (
 
 # --- Factories de Serviços Básicos ---
 def get_s3_service():
-    return S3Service(bucket_name=os.getenv("S3_BUCKET_NAME"))
+    return S3Service()
 
 def get_repo():
     return DynamoDBVideoRepo(table_name=os.getenv("DYNAMO_TABLE_NAME"))
