@@ -9,9 +9,9 @@ on:
 env:
   ECR_REPOSITORY: hack-video-ingest
   EKS_CLUSTER_NAME: hack-infra-eks
-  S3_BUCKET_NAME: "hack-uploaded-videos"
-  DYNAMO_TABLE_NAME: "hack-video-processing-db"
-  SQS_QUEUE_NAME: "hack-video-processing-queue"
+  S3_BUCKET_NAME: 'hack-uploaded-videos'
+  DYNAMO_TABLE_NAME: 'hack-video-processing-db'
+  SQS_QUEUE_NAME: 'hack-video-processing-queue'
 
 jobs:
   # Job 1: Qualidade de Código
@@ -48,7 +48,6 @@ jobs:
 
     # Exporta a imagem completa para o próximo job
     outputs:
-      registry: ${{ steps.login-ecr.outputs.registry }}
       image_tag: ${{ github.sha }}
 
     steps:
@@ -117,17 +116,17 @@ jobs:
         run: |
           # Obtém o Account ID dinamicamente
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-
+          
           # Monta a URL do Registry
           ECR_REGISTRY="${ACCOUNT_ID}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com"
-
+          
           # Monta a URL da SQS
           export SQS_QUEUE_URL="https://sqs.${{ secrets.AWS_REGION }}.amazonaws.com/${ACCOUNT_ID}/${{ env.SQS_QUEUE_NAME }}"
-
+          
           echo "Registry: $ECR_REGISTRY"
-          echo "SQS URL: $SQS_QUEUE_URL"
+          echo "SQS URL: $SQS_QUEUE_URL"  
 
-          # Criação do namespace
+          # Criação do namespace  
           kubectl apply -f k8s/base/namespace.yml
 
           # Cria/Atualiza os secrets imperativamente
@@ -138,7 +137,7 @@ jobs:
             --from-literal=aws_session_token=${{ secrets.AWS_SESSION_TOKEN }} \
             --from-literal=aws_region=${{ secrets.AWS_REGION }} \
             --dry-run=client -o yaml | kubectl apply -f -
-
+            
           kubectl delete secret app-secrets -n video-ingest-ns --ignore-not-found
           kubectl create secret generic app-secrets -n video-ingest-ns \
             --from-literal=jwt_secret=${{ secrets.JWT_SECRET }} \
