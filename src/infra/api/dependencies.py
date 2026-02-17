@@ -45,12 +45,13 @@ def get_confirm_use_case(
     )
 
 def get_list_videos_use_case(
-    repo: DynamoDBVideoRepo = Depends(get_repo)
+    repo: DynamoDBVideoRepo = Depends(get_repo),
+    storage: S3Service = Depends(get_s3_service)
 ):
     """
     Injeta o Repositório do DynamoDB dentro do Caso de Uso de Listagem
     """
-    return ListVideosUseCase(repo=repo)
+    return ListVideosUseCase(repo=repo, storage=storage)
 
 
 def get_update_task_use_case(

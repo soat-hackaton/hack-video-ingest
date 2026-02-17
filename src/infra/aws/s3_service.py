@@ -35,3 +35,17 @@ class S3Service(StorageInterface):
             return True
         except ClientError:
             return False
+    
+    def generate_download_url(self, key: str, expiration=3600) -> str:
+        try:
+            return self.client.generate_presigned_url(
+                'get_object',
+                Params={
+                    'Bucket': self.bucket,
+                    'Key': key
+                },
+                ExpiresIn=expiration
+            )
+        except Exception as e:
+            print(f"Erro ao gerar URL de download: {e}")
+            return None
