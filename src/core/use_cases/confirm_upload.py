@@ -3,7 +3,12 @@ import os
 from src.core.interfaces import MessageBrokerInterface, RepositoryInterface, StorageInterface
 from src.core.exceptions import ResourceNotFoundException, BusinessRuleException
 from src.infra.logging.context import set_correlation_id
-from src.infra.api.schemas.upload import TaskStatus
+
+class TaskStatus:
+    QUEUED = "QUEUED"
+    PROCESSING = "PROCESSING"
+    DONE = "DONE"
+    ERROR = "ERROR"
 
 logger = logging.getLogger(__name__)
 

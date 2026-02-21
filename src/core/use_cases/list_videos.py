@@ -1,6 +1,11 @@
-from src.infra.api.schemas.upload import TaskStatus
 from src.core.interfaces.repositories import RepositoryInterface
 from src.core.interfaces.storage import StorageInterface
+
+class TaskStatus:
+    QUEUED = "QUEUED"
+    PROCESSING = "PROCESSING"
+    DONE = "DONE"
+    ERROR = "ERROR"
 
 class ListVideosUseCase:
     def __init__(self, repo: RepositoryInterface, storage: StorageInterface):
@@ -12,7 +17,7 @@ class ListVideosUseCase:
         
         formatted_items = []
         for item in items:
-            status = item.get("status", TaskStatus.ERROR.value)
+            status = item.get("status", TaskStatus.ERROR)
             download_url = None
             
             s3_download_path = item.get("s3_download_path")

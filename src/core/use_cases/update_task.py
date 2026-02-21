@@ -2,7 +2,12 @@ import logging
 from src.core.interfaces import RepositoryInterface, StorageInterface, MessageBrokerInterface
 from src.core.use_cases.update_video_status import UpdateVideoStatusUseCase
 from src.infra.logging.context import set_correlation_id
-from src.infra.api.schemas.upload import TaskStatus
+
+class TaskStatus:
+    QUEUED = "QUEUED"
+    PROCESSING = "PROCESSING"
+    DONE = "DONE"
+    ERROR = "ERROR"
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +53,7 @@ class UpdateTaskUseCase:
             logger.error(f"Status atualizado, mas falha ao enviar notificação: {e}")
 
         # Auto-Feeding Mechanism
-        if status in [TaskStatus.DONE.value, TaskStatus.ERROR.value]:
+        if status in [TaskStatus.DONE, TaskStatus.ERROR]:
             try:
                 oldest_queued = self.repo.get_oldest_queued_by_user(user_email)
                 if oldest_queued:

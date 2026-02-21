@@ -3,7 +3,12 @@ import uuid
 from src.core.interfaces import StorageInterface, RepositoryInterface
 from src.core.entities.video_task import VideoTask
 from src.infra.logging.context import set_correlation_id
-from src.infra.api.schemas.upload import TaskStatus
+
+class TaskStatus:
+    QUEUED = "QUEUED"
+    PROCESSING = "PROCESSING"
+    DONE = "DONE"
+    ERROR = "ERROR"
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +42,7 @@ class RequestUploadUseCase:
                 filename=filename,
                 s3_path=s3_key,
                 s3_download_path=s3_download_key,
-                status=TaskStatus.QUEUED.value,
+                status=TaskStatus.QUEUED,
                 user_email=user_email
             )
             self.repo.save(task)
