@@ -1,19 +1,21 @@
 from typing import Optional
+import os
 
 class VideoStatusEmailBuilder:
     @staticmethod
     def get_template_by_status(status: str, download_url: Optional[str] = None) -> str:
+        frontend_url = os.getenv("FRONTEND_URL", "#")
+
         if status == "DONE":
             return VideoStatusEmailBuilder._template_done(download_url)
-
-        templates_map = {
-            "ERROR": VideoStatusEmailBuilder._template_error,
-            "PROCESSING": VideoStatusEmailBuilder._template_processing,
-            "QUEUED": VideoStatusEmailBuilder._template_queued
-        }
-
-        template_method = templates_map.get(status, VideoStatusEmailBuilder._template_generic)
-        return template_method()
+        elif status == "ERROR":
+            return VideoStatusEmailBuilder._template_error(frontend_url)
+        elif status == "PROCESSING":
+            return VideoStatusEmailBuilder._template_processing(frontend_url)
+        elif status == "QUEUED":
+            return VideoStatusEmailBuilder._template_queued(frontend_url)
+        else:
+            return VideoStatusEmailBuilder._template_generic(frontend_url)
 
     @staticmethod
     def translate_status(status: str) -> str:
@@ -40,7 +42,7 @@ class VideoStatusEmailBuilder:
         return VideoStatusEmailBuilder._build_base_html(title, message, cta_text, footer_text, color, link)
 
     @staticmethod
-    def _template_error() -> str:
+    def _template_error(link: str = "#") -> str:
         title = "Falha no Processamento"
         message = (
             "Infelizmente ocorreu um erro ao processar seu vídeo. "
@@ -50,10 +52,10 @@ class VideoStatusEmailBuilder:
         footer_text = "Se o erro persistir, envie uma evidência para nosso Fale Conosco."
         color = "#ef4444" # Vermelho
         
-        return VideoStatusEmailBuilder._build_base_html(title, message, cta_text, footer_text, color)
+        return VideoStatusEmailBuilder._build_base_html(title, message, cta_text, footer_text, color, link)
 
     @staticmethod
-    def _template_processing() -> str:
+    def _template_processing(link: str = "#") -> str:
         title = "Vídeo em Processamento"
         message = (
             "Estamos processando seu vídeo neste momento. "
@@ -63,10 +65,10 @@ class VideoStatusEmailBuilder:
         footer_text = "Isso costuma ser rápido."
         color = "#f59e0b" # Laranja
         
-        return VideoStatusEmailBuilder._build_base_html(title, message, cta_text, footer_text, color)
+        return VideoStatusEmailBuilder._build_base_html(title, message, cta_text, footer_text, color, link)
 
     @staticmethod
-    def _template_queued() -> str:
+    def _template_queued(link: str = "#") -> str:
         title = "Vídeo na Fila"
         message = (
             "Recebemos seu vídeo! Ele está na fila e será processado em breve. "
@@ -76,16 +78,17 @@ class VideoStatusEmailBuilder:
         footer_text = "Obrigado pela paciência."
         color = "#3b82f6" # Azul
         
-        return VideoStatusEmailBuilder._build_base_html(title, message, cta_text, footer_text, color)
+        return VideoStatusEmailBuilder._build_base_html(title, message, cta_text, footer_text, color, link)
 
     @staticmethod
-    def _template_generic() -> str:
+    def _template_generic(link: str = "#") -> str:
         return VideoStatusEmailBuilder._build_base_html(
             "Status Atualizado", 
             "O status do seu vídeo foi alterado.", 
             "Acessar Plataforma", 
             "", 
-            "#6b7280"
+            "#6b7280",
+            link
         )
 
     @staticmethod
