@@ -112,6 +112,7 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           GMAIL_EMAIL_ADDRESS: ${{ secrets.GMAIL_EMAIL_ADDRESS }}
+          FRONTEND_URL: ${{ vars.FRONTEND_URL }}
 
         run: |
           # Obtém o Account ID dinamicamente
@@ -153,7 +154,7 @@ jobs:
           kustomize build . > final_manifest.yaml
 
           # Substitui as variáveis de ambiente
-          envsubst '${S3_BUCKET_NAME} ${DYNAMO_TABLE_NAME} ${SQS_QUEUE_URL} ${AWS_REGION} ${GMAIL_APP_PASSWORD} ${GMAIL_EMAIL_ADDRESS}' < final_manifest.yaml > deploy.yaml
+          envsubst '${S3_BUCKET_NAME} ${DYNAMO_TABLE_NAME} ${SQS_QUEUE_URL} ${AWS_REGION} ${GMAIL_APP_PASSWORD} ${GMAIL_EMAIL_ADDRESS} ${FRONTEND_URL}' < final_manifest.yaml > deploy.yaml
 
           # Aplica no Cluster
           kubectl apply -f deploy.yaml
