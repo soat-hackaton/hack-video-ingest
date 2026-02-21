@@ -28,8 +28,6 @@ class UpdateTaskUseCase:
 
     def execute(self, task_id: str, status: str, user_email: str, s3_download_path: str = None):
         set_correlation_id(task_id)
-        
-        logger.info(f"Atualizando status da task {task_id} para {status}")
 
         if status == TaskStatus.QUEUED:
             item = self.repo.find_by_id(task_id)
