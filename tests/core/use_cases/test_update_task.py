@@ -70,7 +70,7 @@ def test_update_task_done_with_auto_feeding():
     
     # Check update status
     mock_repo.update_status.assert_any_call("1", "DONE", "results/1.zip")
-    mock_storage.generate_download_url.assert_called_once_with("results/1.zip")
+    mock_storage.generate_download_url.assert_called_once_with("results/1.zip", expiration=604800)
     
     mock_update_status_use_case.execute.assert_called_once_with(
         user_email="test@example.com",
