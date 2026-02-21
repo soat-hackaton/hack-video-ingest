@@ -9,3 +9,11 @@ class RepositoryInterface(ABC):
     @abstractmethod
     def update_status(self, task_id: str, new_status: str):
         pass
+
+    @abstractmethod
+    def count_processing_by_user(self, user_email: str) -> int:
+        pass
+
+    @abstractmethod
+    def get_oldest_queued_by_user(self, user_email: str) -> dict | None:
+        pass

@@ -72,14 +72,17 @@ def get_update_video_status_use_case(
 def get_update_task_use_case(
     repo: DynamoDBVideoRepo = Depends(get_repo),
     update_status_use_case: UpdateVideoStatusUseCase = Depends(get_update_video_status_use_case),
-    storage: S3Service = Depends(get_s3_service)
+    storage: S3Service = Depends(get_s3_service),
+    sqs: SQSService = Depends(get_sqs_service)
 ):
     """
-    Injeta o Repositório e o Caso de Uso de Status
+    Injeta o Repositório e o Caso de Uso de Status, além do broker para auto-feeding.
     """
 
     return UpdateTaskUseCase(
         repo=repo, 
         update_status_use_case=update_status_use_case,
-        storage=storage
+        storage=storage,
+        broker=sqs,
+        queue_url=os.getenv("SQS_QUEUE_URL")
     )

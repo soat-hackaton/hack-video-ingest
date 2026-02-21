@@ -35,21 +35,26 @@ class ConfirmUploadUseCase:
                 logger.error("Arquivo não encontrado no S3 após confirmação do cliente")
                 raise BusinessRuleException("Arquivo não encontrado no Storage")
         
-            message = {
-                "task_id": task_id,
-                "s3_path": item['s3_path'],
-                "filename": item['filename'],
-                "user_email": item['user_email']
-            }
-
-            logger.info("Enviando mensagem para SQS", extra={"queue_url": self.queue_url})
-            self.broker.send_message(self.queue_url, message)
-
-            self.repo.update_status(task_id, TaskStatus.QUEUED)
-
-            logger.info("Processo de ingestão finalizado com sucesso", extra={"step": "ingest_complete"})
+            # Check Concurrency limit BEFORE processing: Fair Queuing
+            active_tasks = self.repo.count_processing_by_user(item['user_email'])
             
-            return {"status": "success", "message": "Vídeo enfileirado para processamento"}
+            if active_tasks < 5:
+                message = {
+                    "task_id": task_id,
+                    "s3_path": item['s3_path'],
+                    "filename": item['filename'],
+                    "user_email": item['user_email']
+                }
+
+                logger.info("Limite respeitado, enviando mensagem para SQS", extra={"queue_url": self.queue_url, "active": active_tasks})
+                self.broker.send_message(self.queue_url, message)
+                self.repo.update_status(task_id, TaskStatus.PROCESSING)
+                logger.info("Processo de ingestão finalizado com sucesso, enviado para worker", extra={"step": "ingest_complete"})
+                return {"status": "success", "message": "Vídeo enfileirado para processamento"}
+            else:
+                logger.info("Limite de concorrência atingido para o usuário. Mantendo vídeo na fila.", extra={"active": active_tasks, "user_email": item['user_email']})
+                self.repo.update_status(task_id, TaskStatus.QUEUED)
+                return {"status": "success", "message": "Vídeo aguardando vaga para processamento (limite excedido)."}
 
         except Exception as e:
             logger.error("Erro crítico ao processar confirmação. Atualizando status para ERROR.", exc_info=True)

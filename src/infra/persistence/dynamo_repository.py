@@ -49,6 +49,39 @@ class DynamoDBVideoRepo(RepositoryInterface):
         items.sort(key=lambda x: x['created_at'], reverse=True)
         return items
 
+    def count_processing_by_user(self, user_email: str) -> int:
+        response = self.table.query(
+            IndexName='UserEmailIndex',
+            KeyConditionExpression=Key('user_email').eq(user_email)
+        )
+        
+        # Filtra na memória os items com status PROCESSING
+        # Note: Idealmente, usar um filter_expression do Dynamo, mas como a volumetria
+        # ativa do usuário não é enorme, manter em memória é seguro o suficiente para agora.
+        # Caso contrário:
+        # FilterExpression=Attr('status').eq('PROCESSING')
+        items = response.get('Items', [])
+        processing_count = sum(1 for item in items if item.get('status') == TaskStatus.PROCESSING.value)
+        return processing_count
+
+    def get_oldest_queued_by_user(self, user_email: str) -> dict | None:
+        response = self.table.query(
+            IndexName='UserEmailIndex',
+            KeyConditionExpression=Key('user_email').eq(user_email)
+        )
+        
+        items = response.get('Items', [])
+        
+        # Filtrar apenas as tasks no estado QUEUED
+        queued_items = [item for item in items if item.get('status') == TaskStatus.QUEUED.value]
+        
+        if not queued_items:
+            return None
+            
+        # Encontrar e retornar a mais antiga (baseada em created_at)
+        oldest_item = min(queued_items, key=lambda x: x['created_at'])
+        return oldest_item
+
     def update_status(
         self, 
         task_id: str, 
