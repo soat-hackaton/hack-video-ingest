@@ -60,8 +60,8 @@ class UpdateVideoStatusUseCase:
             "Infelizmente ocorreu um erro ao processar seu vídeo. "
             "Não se preocupe, você pode tentar processá-lo novamente."
         )
-        cta_text = "Tentar Novamente (Retry)"
-        footer_text = "Se o erro persistir, verifique o formato do arquivo."
+        cta_text = "Tentar Novamente"
+        footer_text = "Se o erro persistir, envie uma evidência para nosso Fale Conosco."
         color = "#ef4444" # Vermelho
         
         return self._build_base_html(title, message, cta_text, footer_text, color)
