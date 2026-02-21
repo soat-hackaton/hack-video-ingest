@@ -31,7 +31,29 @@ class UpdateTaskUseCase:
         
         logger.info(f"Atualizando status da task {task_id} para {status}")
 
-        updated_task = self.repo.update_status(task_id, status, s3_download_path)
+        if status == TaskStatus.QUEUED:
+            item = self.repo.find_by_id(task_id)
+            if not item:
+                logger.warning("Tentativa de retry para Task inexistente")
+                return {"id": task_id, "status": "NOT_FOUND"}
+            
+            active_tasks = self.repo.count_processing_by_user(user_email)
+            if active_tasks < 5:
+                status = TaskStatus.PROCESSING
+                updated_task = self.repo.update_status(task_id, status, s3_download_path)
+                message = {
+                    "task_id": task_id,
+                    "s3_path": updated_task.get('s3_path', item.get('s3_path')),
+                    "filename": updated_task.get('filename', item.get('filename')),
+                    "user_email": updated_task.get('user_email', item.get('user_email'))
+                }
+                self.broker.send_message(self.queue_url, message)
+                logger.info("Vídeo enviado para processamento na repetição.", extra={"queue_url": self.queue_url})
+            else:
+                updated_task = self.repo.update_status(task_id, status, s3_download_path)
+                logger.info("Limite de concorrência atingido para o usuário na repetição. Mantendo vídeo na fila.")
+        else:
+            updated_task = self.repo.update_status(task_id, status, s3_download_path)
 
         try:
             filename = updated_task.get("filename", "Vídeo")
